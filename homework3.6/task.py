@@ -115,7 +115,6 @@ class robot:
             error_bearing = abs(measurements[i] - predicted_measurements[i])
             error_bearing = (error_bearing + pi) % (2.0 * pi) - pi # truncate
             
-
             # update Gaussian
             error *= (exp(- (error_bearing ** 2) / (self.bearing_noise ** 2) / 2.0) /  
                       sqrt(2.0 * pi * (self.bearing_noise ** 2)))
@@ -131,6 +130,30 @@ class robot:
     # --------
     # move: 
     #   
+    def move(self, motion): # Do not change the name of this function
+
+        alpha,d = motion
+        alpha += random.gauss(0.0, self.steering_noise)
+        d += random.gauss(0.0, self.distance_noise)
+        beta = d/self.length * tan(alpha)
+
+        if abs(alpha) >= 0.001:
+            R = d/beta
+            cx = self.x-sin(self.orientation)*R
+            cy = self.y+cos(self.orientation)*R
+            new_x = cx + sin(self.orientation + beta)*R
+            new_y = cy - cos(self.orientation + beta)*R
+        else:        
+            new_x = self.x + cos(self.orientation)*d
+            new_y = self.y + sin(self.orientation)*d        
+        new_orientation = (self.orientation + beta) % (2.0 * pi)
+	
+        result = robot(self.length)
+        result.set(new_x, new_y, new_orientation)
+        result.set_noise(bearing_noise, steering_noise, distance_noise)
+
+        return result # make sure your move function returns an instance
+                      # of the robot class with the correct coordinates.
     
     # copy your code from the previous exercise
     # and modify it so that it simulates motion noise
@@ -141,6 +164,19 @@ class robot:
     # --------
     # sense: 
     #    
+    def sense(self, flag=1): #do not change the name of this function
+		Z = []
+
+		for landmark in landmarks:
+			dx = landmark[1] - self.x
+			dy = landmark[0] - self.y
+			if flag == 0:
+				noise = 0.0
+			else:
+				noise = random.gauss(0.0, self.bearing_noise)
+			Z.append((atan2(dy,dx)-self.orientation + noise) % (2.0 * pi))
+		
+		return Z #Leave this line here. Return vector Z of 4 bearings.
 
     # copy your code from the previous exercise
     # and modify it so that it simulates bearing noise

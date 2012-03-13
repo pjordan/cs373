@@ -95,8 +95,10 @@ class robot:
     def sense(self): #do not change the name of this function
         Z = []
 
-        # ENTER CODE HERE
-        # HINT: You will probably need to use the function atan2()
+        for landmark in landmarks:
+			dx = landmark[1] - self.x
+			dy = landmark[0] - self.y
+			Z.append((atan2(dy,dx)-self.orientation) % (2.0 * pi))
 
         return Z #Leave this line here. Return vector Z of 4 bearings.
     
